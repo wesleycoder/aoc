@@ -1,7 +1,7 @@
-import { createInterface } from 'readline/promises'
+import { once } from 'events'
 import { createReadStream } from 'fs'
 import { resolve } from 'path'
-import { once } from 'events'
+import { createInterface } from 'readline/promises'
 
 const numbersRegex = /(\d|one|two|three|four|five|six|seven|eight|nine)/g
 const lastNumberRegex =
@@ -21,7 +21,7 @@ const spellMap = {
 
 type Spelled = keyof typeof spellMap
 
-export async function partTwo(input: string) {
+export default async function main(input: string) {
   const readline = createInterface({
     input: createReadStream(resolve(__dirname, input)),
   })
@@ -34,9 +34,7 @@ export async function partTwo(input: string) {
     const first = fistMatches.slice(0)[0][0]
     const second = lastMatches.slice(-1)[0][1]
 
-    const firstNumber = /\d/.test(first)
-      ? first
-      : spellMap[first as Spelled]
+    const firstNumber = /\d/.test(first) ? first : spellMap[first as Spelled]
     const secondNumber = /\d/.test(second)
       ? second
       : spellMap[second as Spelled]
