@@ -1,0 +1,15 @@
+---
+to: <%= year %>/<%= day %>/<%= part.path %>/index.test.ts
+---
+import { describe, expect, it } from 'bun:test'
+import { resolve } from 'path'
+import <%= part.path %> from './'
+
+describe('2023/1 part <%= part.name %>', () => {
+  it.only('should return correctly for sample input', async () => {
+    expect(await <%= part.path %>(resolve(__dirname, 'sample.txt'))).toEqual(0)
+  })
+  it('should return correctly for main input', async () => {
+    expect(await <%= part.path %>(resolve(__dirname, '../input.txt'))).toEqual(0)
+  })
+})

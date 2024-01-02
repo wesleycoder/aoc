@@ -1,73 +1,72 @@
-const { JSDOM } = require('jsdom')
-const TurdownService = require('turndown')
+const {
+  fetchInput,
+  fetchInstructions,
+  removeInputCache,
+  removeInstructionsCache,
+} = require('../../../utils/api.cjs')
+const { capitalize, toWords } = require('../../../utils/string.cjs')
 
-/** @type {TurdownService} */
-const mdSvc = new TurdownService()
-
-const headers = { Cookie: `session=${process.env.AOC_SESSION}` }
-
-/** @param {{ day: number; year: number }} options */
-async function fetchInput({ day, year }) {
-  const res = await fetch(`https://adventofcode.com/${year}/day/${day}/input`, {
-    headers,
-  })
-  return await res.text()
-}
-
-/** @param {{ day: number; year: number }} options */
-async function fetchInstructions({ day, year }) {
-  const res = await fetch(`https://adventofcode.com/${year}/day/${day}`, {
-    headers,
-  })
-  const body = await res.text()
-  /** @type {JSDOM} */
-  const doc = new JSDOM(body)
-  const article = doc.window.document.querySelector('.day-desc').outerHTML
-  return mdSvc.turndown(article)
-}
+const startOfAoC = 2015
 
 const prompt = {
   /** @param {{ prompter: import('enquirer'), args: object }} prompter */
   async prompt({ prompter, args }) {
     const today = new Date()
+    const currentYear = today.getFullYear()
+    const currentMonth = today.getMonth()
+    const currentDay =
+      currentMonth === 11 && today.getDate() <= 25 ? today.getDate() : 1
 
-    const { year, day } = await prompter.prompt([
+    const { year, day, part } = await prompter.prompt([
       {
-        type: 'input',
+        type: 'select',
         name: 'year',
         message: 'Year:',
-        hint: args.year ?? today.getFullYear().toString(),
-        initial: args.year ?? today.getFullYear(),
+        hint: args.year ?? currentYear.toString(),
+        choices: Array.from({ length: currentYear - startOfAoC + 1 }, (_, i) =>
+          (currentYear - i).toString()
+        ),
+        initial: args.year ?? currentYear.toString(),
       },
       {
-        type: 'input',
+        type: 'numeral',
         name: 'day',
         message: 'Day:',
-        hint: args.day ?? today.getDate().toString(),
-        initial: args.day ?? today.getDate(),
+        hint: 'A day between 1 and 25 of december',
+        initial: args.day ?? currentDay,
+        validate: (value) =>
+          Number.isInteger(value) && value > 0 && value <= 25,
+      },
+      {
+        type: 'numeral',
+        name: 'part',
+        message: 'Part:',
+        hint: args.part ?? '1',
+        initial: args.part ?? 1,
       },
     ])
 
-    const input = await fetchInput({ year: year, day: day })
-    if (input.startsWith("Please don't repeatedly request")) {
-      throw new Error(input)
-    }
-
-    const instructions = await fetchInstructions({
-      year: year,
-      day: day,
+    const input = await fetchInput({ year, day })
+    const { instructions, sample } = await fetchInstructions({
+      year,
+      day,
+      part,
     })
 
     return {
+      path: `${year}/${day}/part${capitalize(toWords(part))}.js`,
       year,
       day,
+      part: {
+        number: part,
+        name: capitalize(toWords(part)),
+        path: `part${capitalize(toWords(part))}`,
+      },
       input,
       instructions,
+      sample,
     }
   },
 }
 
 module.exports = prompt
-
-/** @typedef {import('jsdom').JSDOM} JSDOM */
-/** @typedef {import('turndown')} TurdownService */

@@ -1,0 +1,11 @@
+---
+to: <%= year %>/<%= day %>/index.ts
+---
+import { resolve } from "path";
+import <%= part.path %> from "./<%= part.path %>";
+
+const input = resolve(__dirname, 'input.txt')
+const sample<%= part.name %> = resolve(__dirname, '<%= part.path %>/sample.txt')
+
+const result<%= part.name %> = await part<%= part.name %>(sample<%= part.name %>)
+console.log(result<%= part.name %>)

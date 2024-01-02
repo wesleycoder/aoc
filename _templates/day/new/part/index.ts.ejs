@@ -1,0 +1,23 @@
+---
+to: <%= year %>/<%= day %>/<%= part.path %>/index.ts
+---
+import { once } from 'events'
+import { createReadStream } from 'fs'
+import { resolve } from 'path'
+import { createInterface } from "readline/promises"
+
+export default async function <%= part.path %>(input: string) {
+  const readline = createInterface({
+    input: createReadStream(resolve(__dirname, input)),
+  })
+
+  let total = 0;
+
+  readline.on('line', (line) => {
+    console.log(line)
+  })
+
+  await once(readline, 'close')
+
+  return total
+}
